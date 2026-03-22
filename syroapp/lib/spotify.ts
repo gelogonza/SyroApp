@@ -161,6 +161,27 @@ export async function getArtistTopTracks(
   return { tracks: data?.tracks?.slice(0, 5) ?? [] }
 }
 
+export async function getQueue(accessToken: string) {
+  const data = await spotifyFetch(accessToken, "/me/player/queue")
+  if (!data) return { currently_playing: null, queue: [] }
+  return {
+    currently_playing: data.currently_playing ?? null,
+    queue: (data.queue ?? []).slice(0, 20),
+  }
+}
+
+export async function addToQueue(accessToken: string, uri: string) {
+  try {
+    const res = await fetch(`${BASE_URL}/me/player/queue?uri=${encodeURIComponent(uri)}`, {
+      method: "POST",
+      headers: headers(accessToken),
+    })
+    return res.ok || res.status === 204
+  } catch {
+    return false
+  }
+}
+
 export async function getAlbumTracks(accessToken: string, albumId: string) {
   const [tracksData, albumData] = await Promise.all([
     spotifyFetch(accessToken, `/albums/${albumId}/tracks?limit=50`),

@@ -10,6 +10,7 @@ import VolumeBar from "./VolumeBar"
 import SearchBar from "./SearchBar"
 import DeviceSelector from "./DeviceSelector"
 import Toast from "./Toast"
+import QueuePanel from "./QueuePanel"
 import { useToast } from "@/hooks/useToast"
 
 function extractDominantColor(imageUrl: string): Promise<string> {
@@ -62,6 +63,7 @@ export default function Player() {
   const [bgColor, setBgColor] = useState("#1a4a3a")
   const lastAlbumId = useRef<string | null>(null)
   const { toast, showToast } = useToast()
+  const [queueOpen, setQueueOpen] = useState(false)
 
   const track = state?.item ?? null
   const isPlaying = state?.is_playing ?? false
@@ -151,6 +153,22 @@ export default function Player() {
     [refetch, showToast]
   )
 
+  const handleAddToQueue = useCallback(
+    async (uri: string) => {
+      const res = await fetch("/api/spotify/queue/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uri }),
+      })
+      if (res.ok) {
+        showToast("Added to queue")
+      } else {
+        showToast("Failed to add to queue", "error")
+      }
+    },
+    [showToast]
+  )
+
   const handleTransfer = useCallback(
     (deviceId: string) => {
       apiCall("transfer", "POST", { deviceId })
@@ -170,7 +188,7 @@ export default function Player() {
     >
       {/* Search */}
       <div className="w-full max-w-[680px] px-6 pt-6 pb-2 z-10">
-        <SearchBar onPlay={handlePlay} showToast={showToast} />
+        <SearchBar onPlay={handlePlay} showToast={showToast} onAddToQueue={handleAddToQueue} />
       </div>
 
       {/* Main content */}
@@ -223,6 +241,8 @@ export default function Player() {
           onPrevious={handlePrevious}
           onShuffle={handleShuffle}
           onRepeat={handleRepeat}
+          onQueueToggle={() => setQueueOpen((prev) => !prev)}
+          queueOpen={queueOpen}
         />
       </div>
 
@@ -231,6 +251,12 @@ export default function Player() {
         <VolumeBar volume={volume} onVolumeChange={handleVolume} />
         <DeviceSelector currentDevice={device} onTransfer={handleTransfer} />
       </div>
+
+      <QueuePanel
+        open={queueOpen}
+        onClose={() => setQueueOpen(false)}
+        showToast={showToast}
+      />
 
       <Toast toast={toast} />
     </div>

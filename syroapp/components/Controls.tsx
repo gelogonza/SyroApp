@@ -9,6 +9,8 @@ interface ControlsProps {
   onPrevious: () => void
   onShuffle: () => void
   onRepeat: () => void
+  onQueueToggle: () => void
+  queueOpen: boolean
 }
 
 function ShuffleIcon({ active }: { active: boolean }) {
@@ -94,6 +96,34 @@ function NextIcon() {
   )
 }
 
+function QueueIcon({ active }: { active: boolean }) {
+  return (
+    <div className="relative">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={`transition-colors ${active ? "text-white" : "text-white/60"}`}
+      >
+        <line x1="8" y1="6" x2="21" y2="6" />
+        <line x1="8" y1="12" x2="21" y2="12" />
+        <line x1="8" y1="18" x2="21" y2="18" />
+        <line x1="3" y1="6" x2="3.01" y2="6" />
+        <line x1="3" y1="12" x2="3.01" y2="12" />
+        <line x1="3" y1="18" x2="3.01" y2="18" />
+      </svg>
+      {active && (
+        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white" />
+      )}
+    </div>
+  )
+}
+
 function RepeatIcon({ state }: { state: "off" | "context" | "track" }) {
   const active = state !== "off"
   return (
@@ -135,6 +165,8 @@ export default function Controls({
   onPrevious,
   onShuffle,
   onRepeat,
+  onQueueToggle,
+  queueOpen,
 }: ControlsProps) {
   return (
     <div className="flex items-center justify-center gap-6 md:gap-8">
@@ -176,6 +208,14 @@ export default function Controls({
         aria-label="Toggle repeat"
       >
         <RepeatIcon state={repeatState} />
+      </button>
+
+      <button
+        onClick={onQueueToggle}
+        className="p-2 hover:scale-110 transition-transform"
+        aria-label="Toggle queue"
+      >
+        <QueueIcon active={queueOpen} />
       </button>
     </div>
   )

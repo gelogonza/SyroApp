@@ -8,9 +8,10 @@ import type { ToastVariant } from "@/hooks/useToast"
 interface SearchBarProps {
   onPlay: (uri: string) => Promise<void>
   showToast: (message: string, variant?: ToastVariant) => void
+  onAddToQueue?: (uri: string) => Promise<void>
 }
 
-export default function SearchBar({ onPlay, showToast }: SearchBarProps) {
+export default function SearchBar({ onPlay, showToast, onAddToQueue }: SearchBarProps) {
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -109,6 +110,7 @@ export default function SearchBar({ onPlay, showToast }: SearchBarProps) {
           query={query}
           onPlayTrack={handlePlayTrack}
           showToast={showToast}
+          onAddToQueue={onAddToQueue}
         />
       )}
     </div>

@@ -15,6 +15,7 @@ interface SearchResultsProps {
   query: string
   onPlayTrack: (uri: string) => Promise<void>
   showToast: (message: string, variant?: ToastVariant) => void
+  onAddToQueue?: (uri: string) => Promise<void>
 }
 
 function formatDuration(ms: number) {
@@ -44,11 +45,13 @@ function TrackRow({
   onPlay,
   showToast,
   indent = false,
+  onAddToQueue,
 }: {
   track: SpotifyTrack
   onPlay: (uri: string) => Promise<void>
   showToast: (message: string, variant?: ToastVariant) => void
   indent?: boolean
+  onAddToQueue?: (uri: string) => Promise<void>
 }) {
   const handleClick = async () => {
     try {
@@ -58,13 +61,19 @@ function TrackRow({
     }
   }
 
+  const handleAddToQueue = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!onAddToQueue) return
+    await onAddToQueue(track.uri)
+  }
+
   const albumImage = track.album?.images?.[track.album.images.length - 1]?.url
 
   return (
-    <button
-      onClick={handleClick}
-      className="w-full flex items-center gap-3 py-2 px-3 transition-colors text-left rounded-lg"
+    <div
+      className="group w-full flex items-center gap-3 py-2 px-3 transition-colors text-left rounded-lg cursor-pointer"
       style={{ paddingLeft: indent ? "2rem" : undefined }}
+      onClick={handleClick}
       onMouseEnter={(e) =>
         (e.currentTarget.style.background = "rgba(255,255,255,0.07)")
       }
@@ -93,7 +102,28 @@ function TrackRow({
           {formatDuration(track.duration_ms)}
         </span>
       )}
-    </button>
+      {onAddToQueue && (
+        <button
+          onClick={handleAddToQueue}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-white/50 hover:text-white shrink-0"
+          aria-label="Add to queue"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -101,10 +131,12 @@ function ArtistRow({
   artist,
   onPlay,
   showToast,
+  onAddToQueue,
 }: {
   artist: SpotifyArtist
   onPlay: (uri: string) => Promise<void>
   showToast: (message: string, variant?: ToastVariant) => void
+  onAddToQueue?: (uri: string) => Promise<void>
 }) {
   const [expanded, setExpanded] = useState(false)
   const [tracks, setTracks] = useState<SpotifyTrack[]>([])
@@ -186,6 +218,7 @@ function ArtistRow({
                 onPlay={onPlay}
                 showToast={showToast}
                 indent
+                onAddToQueue={onAddToQueue}
               />
             ))
           )}
@@ -199,10 +232,12 @@ function AlbumRow({
   album,
   onPlay,
   showToast,
+  onAddToQueue,
 }: {
   album: SpotifyAlbum
   onPlay: (uri: string) => Promise<void>
   showToast: (message: string, variant?: ToastVariant) => void
+  onAddToQueue?: (uri: string) => Promise<void>
 }) {
   const [expanded, setExpanded] = useState(false)
   const [tracks, setTracks] = useState<SpotifyTrack[]>([])
@@ -284,6 +319,7 @@ function AlbumRow({
                 onPlay={onPlay}
                 showToast={showToast}
                 indent
+                onAddToQueue={onAddToQueue}
               />
             ))
           )}
@@ -309,6 +345,7 @@ export default function SearchResults({
   query,
   onPlayTrack,
   showToast,
+  onAddToQueue,
 }: SearchResultsProps) {
   if (isLoading && !results) {
     return (
@@ -365,6 +402,7 @@ export default function SearchResults({
                     track={track}
                     onPlay={onPlayTrack}
                     showToast={showToast}
+                    onAddToQueue={onAddToQueue}
                   />
                 ))}
               </div>
@@ -381,6 +419,7 @@ export default function SearchResults({
                     artist={artist}
                     onPlay={onPlayTrack}
                     showToast={showToast}
+                    onAddToQueue={onAddToQueue}
                   />
                 ))}
               </div>
@@ -397,6 +436,7 @@ export default function SearchResults({
                     album={album}
                     onPlay={onPlayTrack}
                     showToast={showToast}
+                    onAddToQueue={onAddToQueue}
                   />
                 ))}
               </div>
