@@ -133,6 +133,52 @@ export async function transferPlayback(
 }
 
 export async function search(accessToken: string, query: string) {
-  const params = new URLSearchParams({ q: query, type: "track", limit: "10" })
+  const params = new URLSearchParams({
+    q: query,
+    type: "track,artist,album",
+    limit: "5",
+  })
   return spotifyFetch(accessToken, `/search?${params}`)
+}
+
+export async function searchSpotify(accessToken: string, query: string) {
+  const params = new URLSearchParams({
+    q: query,
+    type: "track,artist,album",
+    limit: "5",
+  })
+  return spotifyFetch(accessToken, `/search?${params}`)
+}
+
+export async function getArtistTopTracks(
+  accessToken: string,
+  artistId: string
+) {
+  const data = await spotifyFetch(
+    accessToken,
+    `/artists/${artistId}/top-tracks?market=US`
+  )
+  return { tracks: data?.tracks?.slice(0, 5) ?? [] }
+}
+
+export async function getAlbumTracks(accessToken: string, albumId: string) {
+  const [tracksData, albumData] = await Promise.all([
+    spotifyFetch(accessToken, `/albums/${albumId}/tracks?limit=50`),
+    spotifyFetch(accessToken, `/albums/${albumId}`),
+  ])
+
+  const albumImage = albumData?.images?.[0]?.url ?? null
+  const albumName = albumData?.name ?? ""
+  const tracks = (tracksData?.items ?? []).map(
+    (t: { id: string; name: string; uri: string; duration_ms: number; artists: Array<{ id: string; name: string }> }) => ({
+      ...t,
+      album: {
+        id: albumId,
+        name: albumName,
+        images: albumData?.images ?? [],
+      },
+    })
+  )
+
+  return { tracks, albumImage }
 }

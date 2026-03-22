@@ -28,8 +28,24 @@ export interface SpotifyDevice {
   volume_percent: number
 }
 
-export interface SpotifySearchResult {
-  tracks: {
-    items: SpotifyTrack[]
-  }
+export interface SpotifyArtist {
+  id: string
+  name: string
+  images: Array<{ url: string; width: number; height: number }>
+  genres: string[]
+}
+
+export interface SpotifyAlbum {
+  id: string
+  name: string
+  artists: Array<{ id: string; name: string }>
+  images: Array<{ url: string; width: number; height: number }>
+  release_date: string
+  total_tracks: number
+}
+
+export interface SpotifySearchResults {
+  tracks: SpotifyTrack[]
+  artists: SpotifyArtist[]
+  albums: SpotifyAlbum[]
 }

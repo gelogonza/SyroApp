@@ -9,6 +9,8 @@ import Controls from "./Controls"
 import VolumeBar from "./VolumeBar"
 import SearchBar from "./SearchBar"
 import DeviceSelector from "./DeviceSelector"
+import Toast from "./Toast"
+import { useToast } from "@/hooks/useToast"
 
 function extractDominantColor(imageUrl: string): Promise<string> {
   return new Promise((resolve) => {
@@ -59,6 +61,7 @@ export default function Player() {
   const { state, refetch } = usePlaybackState()
   const [bgColor, setBgColor] = useState("#1a4a3a")
   const lastAlbumId = useRef<string | null>(null)
+  const { toast, showToast } = useToast()
 
   const track = state?.item ?? null
   const isPlaying = state?.is_playing ?? false
@@ -133,10 +136,19 @@ export default function Player() {
   )
 
   const handlePlay = useCallback(
-    (uri: string) => {
-      apiCall("play", "POST", { uri })
+    async (uri: string) => {
+      const res = await fetch("/api/spotify/play", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uri }),
+      })
+      if (!res.ok) {
+        showToast("Open Spotify on a device first", "error")
+        return
+      }
+      setTimeout(refetch, 600)
     },
-    [apiCall]
+    [refetch, showToast]
   )
 
   const handleTransfer = useCallback(
@@ -158,7 +170,7 @@ export default function Player() {
     >
       {/* Search */}
       <div className="w-full max-w-[680px] px-6 pt-6 pb-2 z-10">
-        <SearchBar onPlay={handlePlay} />
+        <SearchBar onPlay={handlePlay} showToast={showToast} />
       </div>
 
       {/* Main content */}
@@ -219,6 +231,8 @@ export default function Player() {
         <VolumeBar volume={volume} onVolumeChange={handleVolume} />
         <DeviceSelector currentDevice={device} onTransfer={handleTransfer} />
       </div>
+
+      <Toast toast={toast} />
     </div>
   )
 }
