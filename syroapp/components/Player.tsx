@@ -11,6 +11,8 @@ import SearchBar from "./SearchBar"
 import DeviceSelector from "./DeviceSelector"
 import Toast from "./Toast"
 import QueuePanel from "./QueuePanel"
+import PlaylistPanel from "./PlaylistPanel"
+import AddToPlaylistModal from "./AddToPlaylistModal"
 import { useToast } from "@/hooks/useToast"
 
 function extractDominantColor(imageUrl: string): Promise<string> {
@@ -64,6 +66,8 @@ export default function Player() {
   const lastAlbumId = useRef<string | null>(null)
   const { toast, showToast } = useToast()
   const [queueOpen, setQueueOpen] = useState(false)
+  const [playlistOpen, setPlaylistOpen] = useState(false)
+  const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false)
 
   const track = state?.item ?? null
   const isPlaying = state?.is_playing ?? false
@@ -209,6 +213,26 @@ export default function Player() {
               <p className="text-sm md:text-[0.9rem] text-white/55">
                 {track.album.name}
               </p>
+              <button
+                onClick={() => setAddToPlaylistOpen(true)}
+                className="inline-flex items-center gap-1 mt-1 text-white/25 hover:text-white/60 transition-colors"
+                aria-label="Add to playlist"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span className="text-xs">Add to playlist</span>
+              </button>
             </>
           ) : (
             <>
@@ -241,8 +265,22 @@ export default function Player() {
           onPrevious={handlePrevious}
           onShuffle={handleShuffle}
           onRepeat={handleRepeat}
-          onQueueToggle={() => setQueueOpen((prev) => !prev)}
+          onQueueToggle={() => {
+            setQueueOpen((prev) => {
+              const next = !prev
+              if (next && window.innerWidth < 768) setPlaylistOpen(false)
+              return next
+            })
+          }}
           queueOpen={queueOpen}
+          onPlaylistToggle={() => {
+            setPlaylistOpen((prev) => {
+              const next = !prev
+              if (next && window.innerWidth < 768) setQueueOpen(false)
+              return next
+            })
+          }}
+          playlistOpen={playlistOpen}
         />
       </div>
 
@@ -252,9 +290,22 @@ export default function Player() {
         <DeviceSelector currentDevice={device} onTransfer={handleTransfer} />
       </div>
 
+      <PlaylistPanel
+        open={playlistOpen}
+        onClose={() => setPlaylistOpen(false)}
+        showToast={showToast}
+      />
+
       <QueuePanel
         open={queueOpen}
         onClose={() => setQueueOpen(false)}
+        showToast={showToast}
+      />
+
+      <AddToPlaylistModal
+        open={addToPlaylistOpen}
+        onClose={() => setAddToPlaylistOpen(false)}
+        currentTrack={track}
         showToast={showToast}
       />
 

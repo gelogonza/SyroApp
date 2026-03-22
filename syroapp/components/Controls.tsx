@@ -11,6 +11,8 @@ interface ControlsProps {
   onRepeat: () => void
   onQueueToggle: () => void
   queueOpen: boolean
+  onPlaylistToggle: () => void
+  playlistOpen: boolean
 }
 
 function ShuffleIcon({ active }: { active: boolean }) {
@@ -124,6 +126,31 @@ function QueueIcon({ active }: { active: boolean }) {
   )
 }
 
+function PlaylistIcon({ active }: { active: boolean }) {
+  return (
+    <div className="relative">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={`transition-colors ${active ? "text-white" : "text-white/60"}`}
+      >
+        <path d="M9 18V5l12-2v13" />
+        <circle cx="6" cy="18" r="3" />
+        <circle cx="18" cy="16" r="3" />
+      </svg>
+      {active && (
+        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white" />
+      )}
+    </div>
+  )
+}
+
 function RepeatIcon({ state }: { state: "off" | "context" | "track" }) {
   const active = state !== "off"
   return (
@@ -167,9 +194,19 @@ export default function Controls({
   onRepeat,
   onQueueToggle,
   queueOpen,
+  onPlaylistToggle,
+  playlistOpen,
 }: ControlsProps) {
   return (
     <div className="flex items-center justify-center gap-6 md:gap-8">
+      <button
+        onClick={onPlaylistToggle}
+        className="p-2 hover:scale-110 transition-transform"
+        aria-label="Toggle playlists"
+      >
+        <PlaylistIcon active={playlistOpen} />
+      </button>
+
       <button
         onClick={onShuffle}
         className="p-2 hover:scale-110 transition-transform"

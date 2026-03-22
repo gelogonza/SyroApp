@@ -182,6 +182,68 @@ export async function addToQueue(accessToken: string, uri: string) {
   }
 }
 
+export async function playContext(
+  accessToken: string,
+  contextUri: string,
+  deviceId?: string
+) {
+  const params = deviceId ? `?device_id=${deviceId}` : ""
+  return spotifyFetch(accessToken, `/me/player/play${params}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ context_uri: contextUri }),
+  })
+}
+
+export async function getUserPlaylists(accessToken: string) {
+  return spotifyFetch(accessToken, "/me/playlists?limit=50")
+}
+
+export async function getPlaylistTracks(accessToken: string, playlistId: string) {
+  return spotifyFetch(accessToken, `/playlists/${playlistId}/tracks?limit=100`)
+}
+
+export async function createPlaylist(
+  accessToken: string,
+  userId: string,
+  name: string,
+  description: string,
+  isPublic: boolean
+) {
+  return spotifyFetch(accessToken, `/users/${userId}/playlists`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, description, public: isPublic }),
+  })
+}
+
+export async function addTrackToPlaylist(
+  accessToken: string,
+  playlistId: string,
+  trackUri: string
+) {
+  try {
+    const res = await fetch(`${BASE_URL}/playlists/${playlistId}/tracks`, {
+      method: "POST",
+      headers: {
+        ...headers(accessToken),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ uris: [trackUri] }),
+    })
+    if (res.status === 403) return { error: "forbidden" }
+    if (!res.ok) return { error: "failed" }
+    return { success: true }
+  } catch {
+    return { error: "failed" }
+  }
+}
+
+export async function getCurrentUserId(accessToken: string) {
+  const data = await spotifyFetch(accessToken, "/me")
+  return data?.id ?? null
+}
+
 export async function getAlbumTracks(accessToken: string, albumId: string) {
   const [tracksData, albumData] = await Promise.all([
     spotifyFetch(accessToken, `/albums/${albumId}/tracks?limit=50`),

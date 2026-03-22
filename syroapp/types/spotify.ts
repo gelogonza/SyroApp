@@ -49,3 +49,14 @@ export interface SpotifySearchResults {
   artists: SpotifyArtist[]
   albums: SpotifyAlbum[]
 }
+
+export interface SpotifyPlaylist {
+  id: string
+  name: string
+  description: string
+  public: boolean
+  tracks: { total: number }
+  images: Array<{ url: string; width: number; height: number }>
+  owner: { id: string; display_name: string }
+  uri: string
+}
