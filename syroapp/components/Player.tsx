@@ -13,7 +13,9 @@ import Toast from "./Toast"
 import QueuePanel from "./QueuePanel"
 import PlaylistPanel from "./PlaylistPanel"
 import AddToPlaylistModal from "./AddToPlaylistModal"
+import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp"
 import { useToast } from "@/hooks/useToast"
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts"
 
 function extractDominantColor(imageUrl: string): Promise<string> {
   return new Promise((resolve) => {
@@ -68,6 +70,11 @@ export default function Player() {
   const [queueOpen, setQueueOpen] = useState(false)
   const [playlistOpen, setPlaylistOpen] = useState(false)
   const [addToPlaylistOpen, setAddToPlaylistOpen] = useState(false)
+  const [volume, setVolume] = useState(100)
+  const [isMuted, setIsMuted] = useState(false)
+  const lastVolumeRef = useRef(100)
+  const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false)
+  const [searchClearTrigger, setSearchClearTrigger] = useState(0)
 
   const track = state?.item ?? null
   const isPlaying = state?.is_playing ?? false
@@ -76,7 +83,6 @@ export default function Player() {
   const shuffleState = state?.shuffle_state ?? false
   const repeatState = state?.repeat_state ?? "off"
   const device = state?.device ?? null
-  const volume = device?.volume_percent ?? 50
   const albumArt = track?.album?.images?.[0]?.url ?? null
 
   const { displayProgress } = useProgress({ progressMs, durationMs, isPlaying })
@@ -89,6 +95,16 @@ export default function Player() {
       extractDominantColor(albumArt).then(setBgColor)
     }
   }, [track?.album?.id, albumArt])
+
+  useEffect(() => {
+    if (device?.volume_percent !== undefined) {
+      setVolume(device.volume_percent)
+      if (device.volume_percent > 0) {
+        lastVolumeRef.current = device.volume_percent
+        setIsMuted(false)
+      }
+    }
+  }, [device?.volume_percent])
 
   const apiCall = useCallback(
     async (
@@ -136,6 +152,9 @@ export default function Player() {
 
   const handleVolume = useCallback(
     (volumePercent: number) => {
+      setVolume(volumePercent)
+      setIsMuted(volumePercent === 0)
+      if (volumePercent > 0) lastVolumeRef.current = volumePercent
       apiCall("volume", "POST", { volumePercent })
     },
     [apiCall]
@@ -180,6 +199,97 @@ export default function Player() {
     [apiCall]
   )
 
+  const kbPlayPause = useCallback(() => {
+    handlePlayPause()
+    showToast(isPlaying ? "\u23F8 Paused" : "\u25B6 Playing", "shortcut", 1500)
+  }, [handlePlayPause, isPlaying, showToast])
+
+  const kbNext = useCallback(() => {
+    handleNext()
+    showToast("\u23ED Next track", "shortcut", 1500)
+  }, [handleNext, showToast])
+
+  const kbPrevious = useCallback(() => {
+    handlePrevious()
+    showToast("\u23EE Previous track", "shortcut", 1500)
+  }, [handlePrevious, showToast])
+
+  const kbSeekForward = useCallback(() => {
+    const current = state?.progress_ms ?? 0
+    const duration = state?.item?.duration_ms ?? 0
+    const newPos = Math.min(current + 10000, duration)
+    apiCall("seek", "POST", { positionMs: newPos })
+    showToast("+10s", "shortcut", 1500)
+  }, [state, apiCall, showToast])
+
+  const kbSeekBackward = useCallback(() => {
+    const current = state?.progress_ms ?? 0
+    const newPos = Math.max(current - 10000, 0)
+    apiCall("seek", "POST", { positionMs: newPos })
+    showToast("\u221210s", "shortcut", 1500)
+  }, [state, apiCall, showToast])
+
+  const kbVolumeUp = useCallback(() => {
+    const newVol = Math.min(volume + 10, 100)
+    setVolume(newVol)
+    setIsMuted(false)
+    lastVolumeRef.current = newVol
+    apiCall("volume", "POST", { volumePercent: newVol })
+    showToast(`Volume ${newVol}%`, "shortcut", 1500)
+  }, [volume, apiCall, showToast])
+
+  const kbVolumeDown = useCallback(() => {
+    const newVol = Math.max(volume - 10, 0)
+    setVolume(newVol)
+    if (newVol === 0) setIsMuted(true)
+    apiCall("volume", "POST", { volumePercent: newVol })
+    showToast(`Volume ${newVol}%`, "shortcut", 1500)
+  }, [volume, apiCall, showToast])
+
+  const kbToggleMute = useCallback(() => {
+    if (isMuted) {
+      const restored = lastVolumeRef.current
+      setVolume(restored)
+      setIsMuted(false)
+      apiCall("volume", "POST", { volumePercent: restored })
+      showToast("\uD83D\uDD0A Volume restored", "shortcut", 1500)
+    } else {
+      lastVolumeRef.current = volume
+      setVolume(0)
+      setIsMuted(true)
+      apiCall("volume", "POST", { volumePercent: 0 })
+      showToast("\uD83D\uDD07 Muted", "shortcut", 1500)
+    }
+  }, [isMuted, volume, apiCall, showToast])
+
+  const kbToggleShuffle = useCallback(() => {
+    handleShuffle()
+    showToast(shuffleState ? "\uD83D\uDD00 Shuffle off" : "\uD83D\uDD00 Shuffle on", "shortcut", 1500)
+  }, [handleShuffle, shuffleState, showToast])
+
+  const kbCloseAll = useCallback(() => {
+    setQueueOpen(false)
+    setPlaylistOpen(false)
+    setSearchClearTrigger((prev) => prev + 1)
+  }, [])
+
+  useKeyboardShortcuts(
+    {
+      playPause: kbPlayPause,
+      next: kbNext,
+      previous: kbPrevious,
+      seekForward: kbSeekForward,
+      seekBackward: kbSeekBackward,
+      volumeUp: kbVolumeUp,
+      volumeDown: kbVolumeDown,
+      toggleShuffle: kbToggleShuffle,
+      toggleMute: kbToggleMute,
+      closeAll: kbCloseAll,
+      toggleShortcutsHelp: () => setShortcutsHelpOpen((prev) => !prev),
+    },
+    { isPanelOpen: queueOpen || playlistOpen }
+  )
+
   const darkBg = darkenColor(bgColor)
 
   return (
@@ -192,7 +302,7 @@ export default function Player() {
     >
       {/* Search */}
       <div className="w-full max-w-[680px] px-6 pt-6 pb-2 z-10">
-        <SearchBar onPlay={handlePlay} showToast={showToast} onAddToQueue={handleAddToQueue} />
+        <SearchBar onPlay={handlePlay} showToast={showToast} onAddToQueue={handleAddToQueue} clearTrigger={searchClearTrigger} />
       </div>
 
       {/* Main content */}
@@ -309,7 +419,21 @@ export default function Player() {
         showToast={showToast}
       />
 
+      <KeyboardShortcutsHelp
+        open={shortcutsHelpOpen}
+        onClose={() => setShortcutsHelpOpen(false)}
+      />
+
       <Toast toast={toast} />
+
+      <button
+        onClick={() => setShortcutsHelpOpen((prev) => !prev)}
+        className="fixed bottom-4 right-4 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-30 hover:opacity-80 transition-opacity z-10"
+        style={{ background: "rgba(255, 255, 255, 0.1)" }}
+        aria-label="Keyboard shortcuts"
+      >
+        ?
+      </button>
     </div>
   )
 }

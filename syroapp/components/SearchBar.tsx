@@ -9,15 +9,26 @@ interface SearchBarProps {
   onPlay: (uri: string) => Promise<void>
   showToast: (message: string, variant?: ToastVariant) => void
   onAddToQueue?: (uri: string) => Promise<void>
+  clearTrigger?: number
 }
 
-export default function SearchBar({ onPlay, showToast, onAddToQueue }: SearchBarProps) {
+export default function SearchBar({ onPlay, showToast, onAddToQueue, clearTrigger }: SearchBarProps) {
   const [query, setQuery] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const prevTriggerRef = useRef(0)
 
   const { results, isLoading, clear } = useSearch(query)
+
+  useEffect(() => {
+    if (clearTrigger && clearTrigger !== prevTriggerRef.current) {
+      setQuery("")
+      clear()
+      setIsOpen(false)
+      prevTriggerRef.current = clearTrigger
+    }
+  }, [clearTrigger, clear])
 
   const showResults =
     isOpen && query.length >= 2 && (results !== null || isLoading)

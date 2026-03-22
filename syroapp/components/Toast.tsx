@@ -9,9 +9,11 @@ interface ToastProps {
 export default function Toast({ toast }: ToastProps) {
   if (!toast.message) return null
 
+  const isShortcut = toast.variant === "shortcut"
+
   return (
     <div
-      className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+      className={`fixed left-1/2 z-50 pointer-events-none ${isShortcut ? "bottom-20" : "bottom-8"}`}
       style={{
         opacity: toast.visible ? 1 : 0,
         transform: `translateX(-50%) translateY(${toast.visible ? "0" : "8px"})`,
@@ -19,7 +21,9 @@ export default function Toast({ toast }: ToastProps) {
       }}
     >
       <div
-        className="px-5 py-2.5 rounded-full text-sm font-medium text-white shadow-lg backdrop-blur-xl"
+        className={`rounded-full font-medium text-white shadow-lg backdrop-blur-xl ${
+          isShortcut ? "px-3.5 py-1.5 text-xs" : "px-5 py-2.5 text-sm"
+        }`}
         style={{
           background:
             toast.variant === "error"

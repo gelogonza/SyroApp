@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react"
 
-export type ToastVariant = "info" | "error"
+export type ToastVariant = "info" | "error" | "shortcut"
 
 export interface ToastState {
   message: string
@@ -19,12 +19,12 @@ export function useToast() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const showToast = useCallback(
-    (message: string, variant: ToastVariant = "info") => {
+    (message: string, variant: ToastVariant = "info", duration: number = 3000) => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       setToast({ message, variant, visible: true })
       timeoutRef.current = setTimeout(() => {
         setToast((prev) => ({ ...prev, visible: false }))
-      }, 3000)
+      }, duration)
     },
     []
   )
