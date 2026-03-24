@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ background: "#111111" }}>
       <body className={inter.className}>
         <SessionProvider>
           <PageTransitionProvider>{children}</PageTransitionProvider>

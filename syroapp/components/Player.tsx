@@ -38,11 +38,15 @@ function extractDominantColor(imageUrl: string): Promise<string> {
         }
         let r = 0, g = 0, b = 0, count = 0
         for (let i = 0; i < data.length; i += 16) {
-          r += data[i]; g += data[i + 1]; b += data[i + 2]; count++
+          r += data[i]
+          g += data[i + 1]
+          b += data[i + 2]
+          count++
         }
-        r = Math.round((r / count) * 0.6)
-        g = Math.round((g / count) * 0.6)
-        b = Math.round((b / count) * 0.6)
+        // 85% of full saturation — close to album art with only slight muting
+        r = Math.round((r / count) * 0.85)
+        g = Math.round((g / count) * 0.85)
+        b = Math.round((b / count) * 0.85)
         resolve(`rgb(${r}, ${g}, ${b})`)
       } catch {
         resolve("#1a4a3a")
@@ -55,10 +59,11 @@ function extractDominantColor(imageUrl: string): Promise<string> {
 
 function darkenColor(color: string): string {
   const match = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)
-  if (!match) return "#0a1a14"
-  const r = Math.round(parseInt(match[1]) * 0.3)
-  const g = Math.round(parseInt(match[2]) * 0.3)
-  const b = Math.round(parseInt(match[3]) * 0.3)
+  if (!match) return "#0a0a0a"
+  // 45% for the outer gradient edge — natural dark vignette, not near-black
+  const r = Math.round(parseInt(match[1]) * 0.45)
+  const g = Math.round(parseInt(match[2]) * 0.45)
+  const b = Math.round(parseInt(match[3]) * 0.45)
   return `rgb(${r}, ${g}, ${b})`
 }
 
@@ -300,6 +305,9 @@ export default function Player() {
         transition: "background 1.5s ease",
       }}
     >
+      {/* Light ray overlay — pure CSS, no JS cost */}
+      <div className="light-rays" aria-hidden="true" />
+
       {/* Search */}
       <div className="w-full max-w-[680px] px-6 pt-6 pb-2 z-10">
         <SearchBar onPlay={handlePlay} showToast={showToast} onAddToQueue={handleAddToQueue} clearTrigger={searchClearTrigger} />
@@ -411,7 +419,6 @@ export default function Player() {
       <QueuePanel
         open={queueOpen}
         onClose={() => setQueueOpen(false)}
-        showToast={showToast}
       />
 
       <AddToPlaylistModal
