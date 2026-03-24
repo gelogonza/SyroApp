@@ -3,12 +3,10 @@
 import { useEffect } from "react"
 import { useQueue } from "@/hooks/useQueue"
 import type { SpotifyTrack } from "@/types/spotify"
-import type { ToastVariant } from "@/hooks/useToast"
 
 interface QueuePanelProps {
   open: boolean
   onClose: () => void
-  showToast: (message: string, variant?: ToastVariant) => void
 }
 
 function SkeletonRows() {
@@ -100,17 +98,12 @@ function QueueTrackRow({
 export default function QueuePanel({
   open,
   onClose,
-  showToast,
 }: QueuePanelProps) {
   const { currentlyPlaying, queue, isLoading, refetch } = useQueue()
 
   useEffect(() => {
     if (open) refetch()
   }, [open, refetch])
-
-  const handleClearQueue = () => {
-    showToast("To clear the queue, skip through tracks on Spotify", "info")
-  }
 
   return (
     <>
@@ -138,33 +131,25 @@ export default function QueuePanel({
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <h2 className="text-white text-lg font-bold">Queue</h2>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleClearQueue}
-              className="text-white/35 text-xs hover:text-white/60 transition-colors"
+          <button
+            onClick={onClose}
+            className="text-white/50 hover:text-white transition-colors p-1"
+            aria-label="Close queue"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              Clear queue
-            </button>
-            <button
-              onClick={onClose}
-              className="text-white/50 hover:text-white transition-colors p-1"
-              aria-label="Close queue"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
 
         {/* Scrollable content */}
