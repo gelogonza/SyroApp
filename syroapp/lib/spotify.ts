@@ -4,7 +4,7 @@ function headers(accessToken: string) {
   return { Authorization: `Bearer ${accessToken}` }
 }
 
-async function spotifyFetch(
+export async function spotifyFetch(
   accessToken: string,
   endpoint: string,
   options?: RequestInit
