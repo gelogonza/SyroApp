@@ -22,31 +22,31 @@ function extractDominantColor(imageUrl: string): Promise<string> {
     const img = new Image()
     img.crossOrigin = "anonymous"
     img.onload = () => {
-      const canvas = document.createElement("canvas")
-      canvas.width = 50
-      canvas.height = 50
-      const ctx = canvas.getContext("2d")
-      if (!ctx) {
+      try {
+        const canvas = document.createElement("canvas")
+        canvas.width = 50
+        canvas.height = 50
+        const ctx = canvas.getContext("2d")
+        if (!ctx) { resolve("#1a4a3a"); return }
+        ctx.drawImage(img, 0, 0, 50, 50)
+        let data: Uint8ClampedArray
+        try {
+          data = ctx.getImageData(0, 0, 50, 50).data
+        } catch {
+          resolve("#1a4a3a")
+          return
+        }
+        let r = 0, g = 0, b = 0, count = 0
+        for (let i = 0; i < data.length; i += 16) {
+          r += data[i]; g += data[i + 1]; b += data[i + 2]; count++
+        }
+        r = Math.round((r / count) * 0.6)
+        g = Math.round((g / count) * 0.6)
+        b = Math.round((b / count) * 0.6)
+        resolve(`rgb(${r}, ${g}, ${b})`)
+      } catch {
         resolve("#1a4a3a")
-        return
       }
-      ctx.drawImage(img, 0, 0, 50, 50)
-      const data = ctx.getImageData(0, 0, 50, 50).data
-
-      let r = 0,
-        g = 0,
-        b = 0,
-        count = 0
-      for (let i = 0; i < data.length; i += 16) {
-        r += data[i]
-        g += data[i + 1]
-        b += data[i + 2]
-        count++
-      }
-      r = Math.round((r / count) * 0.6)
-      g = Math.round((g / count) * 0.6)
-      b = Math.round((b / count) * 0.6)
-      resolve(`rgb(${r}, ${g}, ${b})`)
     }
     img.onerror = () => resolve("#1a4a3a")
     img.src = imageUrl
@@ -397,7 +397,9 @@ export default function Player() {
       {/* Bottom bar */}
       <div className="w-full max-w-[680px] px-6 pb-6 pt-2 flex items-center justify-between">
         <VolumeBar volume={volume} onVolumeChange={handleVolume} />
-        <DeviceSelector currentDevice={device} onTransfer={handleTransfer} />
+        <div className="relative z-20">
+          <DeviceSelector currentDevice={device} onTransfer={handleTransfer} />
+        </div>
       </div>
 
       <PlaylistPanel
@@ -428,7 +430,7 @@ export default function Player() {
 
       <button
         onClick={() => setShortcutsHelpOpen((prev) => !prev)}
-        className="fixed bottom-4 right-4 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-30 hover:opacity-80 transition-opacity z-10"
+        className="fixed bottom-4 right-4 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold opacity-30 hover:opacity-80 transition-opacity z-[5]"
         style={{ background: "rgba(255, 255, 255, 0.1)" }}
         aria-label="Keyboard shortcuts"
       >

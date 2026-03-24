@@ -4,7 +4,7 @@ function headers(accessToken: string) {
   return { Authorization: `Bearer ${accessToken}` }
 }
 
-async function spotifyFetch(
+export async function spotifyFetch(
   accessToken: string,
   endpoint: string,
   options?: RequestInit
@@ -130,15 +130,6 @@ export async function transferPlayback(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ device_ids: [deviceId] }),
   })
-}
-
-export async function search(accessToken: string, query: string) {
-  const params = new URLSearchParams({
-    q: query,
-    type: "track,artist,album",
-    limit: "5",
-  })
-  return spotifyFetch(accessToken, `/search?${params}`)
 }
 
 export async function searchSpotify(accessToken: string, query: string) {

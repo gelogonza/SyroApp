@@ -19,8 +19,8 @@ function ShuffleIcon({ active }: { active: boolean }) {
   return (
     <div className="relative">
       <svg
-        width="20"
-        height="20"
+        width="18"
+        height="18"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -45,8 +45,8 @@ function ShuffleIcon({ active }: { active: boolean }) {
 function PreviousIcon() {
   return (
     <svg
-      width="22"
-      height="22"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="currentColor"
       className="text-white"
@@ -59,8 +59,8 @@ function PreviousIcon() {
 function PlayIcon() {
   return (
     <svg
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="currentColor"
       className="text-black ml-0.5"
@@ -73,8 +73,8 @@ function PlayIcon() {
 function PauseIcon() {
   return (
     <svg
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="currentColor"
       className="text-black"
@@ -87,8 +87,8 @@ function PauseIcon() {
 function NextIcon() {
   return (
     <svg
-      width="22"
-      height="22"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
       fill="currentColor"
       className="text-white"
@@ -102,8 +102,8 @@ function QueueIcon({ active }: { active: boolean }) {
   return (
     <div className="relative">
       <svg
-        width="20"
-        height="20"
+        width="18"
+        height="18"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -130,8 +130,8 @@ function PlaylistIcon({ active }: { active: boolean }) {
   return (
     <div className="relative">
       <svg
-        width="20"
-        height="20"
+        width="18"
+        height="18"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -156,8 +156,8 @@ function RepeatIcon({ state }: { state: "off" | "context" | "track" }) {
   return (
     <div className="relative">
       <svg
-        width="20"
-        height="20"
+        width="18"
+        height="18"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -198,58 +198,59 @@ export default function Controls({
   playlistOpen,
 }: ControlsProps) {
   return (
-    <div className="flex items-center justify-center gap-6 md:gap-8">
+    <div className="w-full flex items-center justify-between px-1">
+      {/* Left panel button */}
       <button
         onClick={onPlaylistToggle}
-        className="p-2 hover:scale-110 transition-transform"
+        className="p-2 hover:scale-110 active:scale-95 transition-transform touch-manipulation"
         aria-label="Toggle playlists"
       >
         <PlaylistIcon active={playlistOpen} />
       </button>
 
-      <button
-        onClick={onShuffle}
-        className="p-2 hover:scale-110 transition-transform"
-        aria-label="Toggle shuffle"
-      >
-        <ShuffleIcon active={shuffleState} />
-      </button>
+      {/* Core playback controls */}
+      <div className="flex items-center gap-4 md:gap-6">
+        <button
+          onClick={onShuffle}
+          className="p-1.5 hover:scale-110 active:scale-95 transition-transform touch-manipulation"
+          aria-label="Toggle shuffle"
+        >
+          <ShuffleIcon active={shuffleState} />
+        </button>
+        <button
+          onClick={onPrevious}
+          className="p-1.5 hover:scale-110 active:scale-95 transition-transform touch-manipulation"
+          aria-label="Previous track"
+        >
+          <PreviousIcon />
+        </button>
+        <button
+          onClick={onPlayPause}
+          className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-lg touch-manipulation"
+          aria-label={isPlaying ? "Pause" : "Play"}
+        >
+          {isPlaying ? <PauseIcon /> : <PlayIcon />}
+        </button>
+        <button
+          onClick={onNext}
+          className="p-1.5 hover:scale-110 active:scale-95 transition-transform touch-manipulation"
+          aria-label="Next track"
+        >
+          <NextIcon />
+        </button>
+        <button
+          onClick={onRepeat}
+          className="p-1.5 hover:scale-110 active:scale-95 transition-transform touch-manipulation"
+          aria-label="Toggle repeat"
+        >
+          <RepeatIcon state={repeatState} />
+        </button>
+      </div>
 
-      <button
-        onClick={onPrevious}
-        className="p-2 hover:scale-110 transition-transform"
-        aria-label="Previous track"
-      >
-        <PreviousIcon />
-      </button>
-
-      <button
-        onClick={onPlayPause}
-        className="w-14 h-14 rounded-full bg-white flex items-center justify-center hover:scale-105 transition-transform shadow-lg"
-        aria-label={isPlaying ? "Pause" : "Play"}
-      >
-        {isPlaying ? <PauseIcon /> : <PlayIcon />}
-      </button>
-
-      <button
-        onClick={onNext}
-        className="p-2 hover:scale-110 transition-transform"
-        aria-label="Next track"
-      >
-        <NextIcon />
-      </button>
-
-      <button
-        onClick={onRepeat}
-        className="p-2 hover:scale-110 transition-transform"
-        aria-label="Toggle repeat"
-      >
-        <RepeatIcon state={repeatState} />
-      </button>
-
+      {/* Right panel button */}
       <button
         onClick={onQueueToggle}
-        className="p-2 hover:scale-110 transition-transform"
+        className="p-2 hover:scale-110 active:scale-95 transition-transform touch-manipulation"
         aria-label="Toggle queue"
       >
         <QueueIcon active={queueOpen} />

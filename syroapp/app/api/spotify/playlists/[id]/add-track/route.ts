@@ -10,7 +10,7 @@ export async function POST(
     return Response.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const body = await request.json()
+  const body = await request.json().catch(() => ({}))
   if (!body.uri) {
     return Response.json({ error: "Missing track uri" }, { status: 400 })
   }
