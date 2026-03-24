@@ -9,17 +9,11 @@ export default function VinylRecord({ albumArt, isPlaying }: VinylRecordProps) {
   return (
     <div className="relative flex items-center justify-center">
       <div
-        className="vinyl-disc relative w-[280px] h-[280px] md:w-[320px] md:h-[320px] rounded-full shadow-2xl"
+        className={`relative w-[240px] h-[240px] md:w-[320px] md:h-[320px] rounded-full shadow-2xl ${
+          isPlaying ? "vinyl-spinning" : "vinyl-paused"
+        }`}
         style={{
-          background: `
-            radial-gradient(circle at center,
-              transparent 0%,
-              transparent 18%,
-              #1a1a1a 18.5%,
-              #1a1a1a 100%
-            )
-          `,
-          animationPlayState: isPlaying ? "running" : "paused",
+          background: `radial-gradient(circle at center, transparent 0%, transparent 18%, #1a1a1a 18.5%, #1a1a1a 100%)`,
         }}
       >
         {/* Groove rings */}
@@ -66,20 +60,6 @@ export default function VinylRecord({ albumArt, isPlaying }: VinylRecordProps) {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .vinyl-disc {
-          animation: spin 4s linear infinite;
-        }
-        @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
     </div>
   )
 }

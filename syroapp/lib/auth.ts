@@ -1,22 +1,27 @@
 import NextAuth from "next-auth"
 
 const SPOTIFY_AUTH_URL = "https://accounts.spotify.com"
-const SPOTIFY_SCOPES = [
+export const SPOTIFY_SCOPES = [
   "user-read-private",
   "user-read-email",
   "user-read-playback-state",
   "user-modify-playback-state",
   "user-read-currently-playing",
   "streaming",
+  "playlist-modify-public",
+  "playlist-modify-private",
 ].join(" ")
 
-async function refreshAccessToken(token: {
+export async function refreshAccessToken(token: {
   refreshToken?: string
   accessToken?: string
   expiresAt?: number
   error?: "RefreshTokenError"
 }) {
   try {
+    if (!token.refreshToken) {
+      return { ...token, error: "RefreshTokenError" as const }
+    }
     const response = await fetch(`${SPOTIFY_AUTH_URL}/api/token`, {
       method: "POST",
       headers: {
@@ -27,7 +32,7 @@ async function refreshAccessToken(token: {
       },
       body: new URLSearchParams({
         grant_type: "refresh_token",
-        refresh_token: token.refreshToken!,
+        refresh_token: token.refreshToken,
       }),
     })
 

@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   if (!session?.accessToken) {
     return Response.json({ error: "Unauthorized" }, { status: 401 })
   }
-  const body = await request.json()
+  const body = await request.json().catch(() => ({}))
   if (!body.uri) {
     return Response.json({ error: "Missing uri" }, { status: 400 })
   }

@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const body = await request.json()
+  const body = await request.json().catch(() => ({}))
   if (!body.name) {
     return Response.json({ error: "Missing playlist name" }, { status: 400 })
   }

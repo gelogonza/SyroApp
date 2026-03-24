@@ -132,15 +132,6 @@ export async function transferPlayback(
   })
 }
 
-export async function search(accessToken: string, query: string) {
-  const params = new URLSearchParams({
-    q: query,
-    type: "track,artist,album",
-    limit: "5",
-  })
-  return spotifyFetch(accessToken, `/search?${params}`)
-}
-
 export async function searchSpotify(accessToken: string, query: string) {
   const params = new URLSearchParams({
     q: query,
